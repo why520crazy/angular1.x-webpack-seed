@@ -10,6 +10,8 @@
 
 ## Build
 
-Run `npm run build` will auto build files to folder www ,
-publish folder www to production server, you can use [nginx](http://nginx.org) or
-[http-server](https://github.com/indexzero/http-server)
+Run `npm run build` will auto build files to folder www.
+
+
+you can use [nginx](http://nginx.org) or
+[http-server](https://github.com/indexzero/http-server) publish folder www to production server,
