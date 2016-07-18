@@ -1,6 +1,7 @@
 import angular from 'angular';
 import ngRoute from 'angular-route';
 import appRouter from './app.router';
+import './css/main.less';
 
 let siteComponent = {
     restrict    : 'E',

@@ -1,8 +1,16 @@
-<div class="page-body">
-    <main>
-        <div ng-view></div>
-    </main>
-    <footer>
-        <a ng-href="{{app.url}}">Angular 1.x + ES6 + Webpack Seed</a>
-    </footer>
-</div>
+<header>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+    </nav>
+</header>
+<main>
+    <h1 class="title">Hello from Angular 1.x !</h1>
+    <!-- Images (and assets) are parsed and loaded from within the public directory -->
+    <img src="./images/angular.png">
+    <div ng-view></div>
+</main>
+
+<footer>
+    <a ng-href="{{app.url}}">Angular 1.x + ES6 + Webpack Seed</a>
+</footer>

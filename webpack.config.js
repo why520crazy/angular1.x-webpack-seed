@@ -3,7 +3,7 @@
 // Modules
 const webpack = require('webpack');
 const helpers = require('./webpack/helpers');
-// const autoprefixer = require('autoprefixer');
+const autoprefixer = require('autoprefixer');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 // const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -14,17 +14,24 @@ const isTest = ENV === 'test' || ENV === 'test-watch';
 const isProd = ENV === 'build';
 
 module.exports = function () {
+    let extractLESS = new ExtractTextPlugin('[name].[hash:8].css');
+
     const config = {
-        entry : {
-            'app'      : './src/app.js',
-            'app.other': './src/app.other.js',
-            'vendor'   : ['angular', 'angular-route']
+        context: helpers.root("./src"),
+        entry  : {
+            'vendor'   : ['angular', 'angular-route'],
+            'app'      : './app.js',
+            'app.other': './app.other.js'
         },
-        output: {
+        output : {
             path         : helpers.root('./www'),
             publicPath   : '/',
             filename     : isProd ? '[name].[hash:8].js' : '[name].bundle.js',
             chunkFilename: isProd ? '[name].[hash:8].js' : '[name].bundle.js'
+            // publish to cdn
+            // publicPath: "http://cdn.example.com/[hash:8]/",
+            // filename     : isProd ? '[hash:8]/[name].js' : '[name].bundle.js',
+            // chunkFilename: isProd ? '[hash:8]/[name].js' : '[name].bundle.js'
         },
 
         /*
@@ -82,16 +89,31 @@ module.exports = function () {
                     test  : /\.json$/,
                     loader: 'json-loader'
                 },
+                /*
+                 * Reference https://github.com/webpack/less-loader
+                 */
+                // {
+                //     test   : /\.less$/,
+                //     loader : "style!css!less",
+                //     //exclude: helpers.root("./src/css/main.less")
+                // },
+                { test: /\.less$/, loader: extractLESS.extract(['css','less']) },
+                // all css required in src/app files will be merged in js files
+                // {
+                //     test   : /\.less/,
+                //     include: helpers.root("./src/css/main.less"),
+                //     loader : 'raw!postcss!less'
+                // },
 
                 /*
                  * to string and css loader support for *.css files
                  * Returns file content as string
                  *
                  */
-                {
-                    test   : /\.css$/,
-                    loaders: ['to-string-loader', 'css-loader']
-                },
+                // {
+                //     test   : /\.css$/,
+                //     loaders: ['to-string-loader', 'css-loader']
+                // },
 
                 // support for .html as raw text
                 // todo: change the loader to something that adds a hash to images
@@ -107,7 +129,7 @@ module.exports = function () {
                 // Copy resource files to output
                 {
                     test  : /\.(png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/i,
-                    loader: 'file?name=resources/[name].[ext]?[hash:8]'
+                    loader: 'file?name=images/[name].[ext]?[hash:8]'
                 }
 
             ]
@@ -120,21 +142,30 @@ module.exports = function () {
          * List: http://webpack.github.io/docs/list-of-plugins.html
          */
         plugins  : [
-            // Reference: https://github.com/ampedandwired/html-webpack-plugin
-            // Render index.html
-            new HtmlWebpackPlugin({
-                template      : helpers.root('./src/index.html'),
-                inject        : 'body',
-                chunksSortMode: 'dependency'
-            }),
             // Reference: https://github.com/webpack/extract-text-webpack-plugin
             // Extract css files
             //new ExtractTextPlugin('[name].[hash:8].css', {disable: !isProd}),
             //vendor
-            new webpack.optimize.CommonsChunkPlugin("commons.chunk.js",['app','app.other']),
-            new webpack.optimize.CommonsChunkPlugin(
-                /* chunkName= */'vendor',
-                /* filename= */'vendor.bundle.js')
+            new webpack.optimize.CommonsChunkPlugin('commons.chunk.js', ['app', 'app.other']),
+            new webpack.optimize.CommonsChunkPlugin('vendor', isProd ? 'vendor.[hash:8].js' : 'vendor.bundle.js'),
+
+            // Reference: https://github.com/ampedandwired/html-webpack-plugin
+            // Render index.html
+            new HtmlWebpackPlugin({
+                template      : helpers.root('./src/index.html'),
+                //inject        : 'body',
+                chunks        : ['commons.chunk.js', 'vendor', 'app'],
+                chunksSortMode: 'dependency'
+            }),
+            new HtmlWebpackPlugin({
+                filename:"app.other.html",
+                template      : helpers.root('./src/index.html'),
+                //inject        : 'body',
+                chunks        : ['commons.chunk.js', 'vendor', 'app.other'],
+                chunksSortMode: 'dependency'
+            }),
+            extractLESS,
+            //new ExtractTextPlugin('[name].[hash:8].css', { disable: !isProd })
         ],
         /**
          * Dev server configuration
@@ -152,12 +183,26 @@ module.exports = function () {
     };
 
     if (isProd) {
-        config.devtool = 'source-map';
+        config.plugins.push(
+            // Reference: http://webpack.github.io/docs/list-of-plugins.html#noerrorsplugin
+            // Only emit files when there are no errors
+            new webpack.NoErrorsPlugin(),
+            // Reference: http://webpack.github.io/docs/list-of-plugins.html#dedupeplugin
+            // Dedupe modules in the output
+            new webpack.optimize.DedupePlugin(),
+            // Reference: http://webpack.github.io/docs/list-of-plugins.html#uglifyjsplugin
+            // Minify all javascript, switch loaders to minimizing mode
+            new webpack.optimize.UglifyJsPlugin()
+        );
+    }
+
+    if (isProd) {
+        //config.devtool = 'source-map';
     } else {
         config.devtool = 'source-map';
     }
     // add debug messages
-    //config.debug = !isProd || !isTest;
+    config.debug = !isProd || !isTest;
 
     return config;
 }();

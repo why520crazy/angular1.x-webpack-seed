@@ -1,10 +1,12 @@
 import angular from 'angular';
 import template from './template.html';
+import style from './home.less';
 
 class HomeController {
     constructor() {
+        this.style = style;
         this.name = 'Home';
-        this.color = 'blue';
+        this.color = '#f87c08';
     }
 }
 
