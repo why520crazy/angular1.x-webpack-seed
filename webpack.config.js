@@ -14,8 +14,6 @@ const isTest = ENV === 'test' || ENV === 'test-watch';
 const isProd = ENV === 'build';
 
 module.exports = function () {
-    let extractLESS = new ExtractTextPlugin('[name].[hash:8].css');
-
     const config = {
         context: helpers.root("./src"),
         entry  : {
@@ -91,19 +89,19 @@ module.exports = function () {
                 },
                 /*
                  * Reference https://github.com/webpack/less-loader
-                 */
-                // {
-                //     test   : /\.less$/,
-                //     loader : "style!css!less",
-                //     //exclude: helpers.root("./src/css/main.less")
-                // },
-                { test: /\.less$/, loader: extractLESS.extract(['css','less']) },
-                // all css required in src/app files will be merged in js files
-                // {
-                //     test   : /\.less/,
-                //     include: helpers.root("./src/css/main.less"),
-                //     loader : 'raw!postcss!less'
-                // },
+                */
+                {
+                    test: /\.less$/,
+                    exclude: helpers.root("./src/css/main.less"),
+                    loader: ExtractTextPlugin.extract("css!postcss!less")
+                },
+                //{test: /\.less$/, loader: extractLESS.extract(['css', 'postcss!less'])},
+                //all css required in src/app files will be merged in js files
+                {
+                    test   : /\.less/,
+                    include: helpers.root("./src/css/main.less"),
+                    loader : 'style!css!postcss!less'
+                },
 
                 /*
                  * to string and css loader support for *.css files
@@ -141,12 +139,12 @@ module.exports = function () {
          * Reference: http://webpack.github.io/docs/configuration.html#plugins
          * List: http://webpack.github.io/docs/list-of-plugins.html
          */
-        plugins  : [
-            // Reference: https://github.com/webpack/extract-text-webpack-plugin
-            // Extract css files
-            //new ExtractTextPlugin('[name].[hash:8].css', {disable: !isProd}),
+        plugins: [
             //vendor
-            new webpack.optimize.CommonsChunkPlugin('commons.chunk.js', ['app', 'app.other']),
+            new webpack.optimize.CommonsChunkPlugin({
+                name  : 'commons.chunk',
+                chunks: ['app', 'app.other']
+            }),
             new webpack.optimize.CommonsChunkPlugin('vendor', isProd ? 'vendor.[hash:8].js' : 'vendor.bundle.js'),
 
             // Reference: https://github.com/ampedandwired/html-webpack-plugin
@@ -154,19 +152,31 @@ module.exports = function () {
             new HtmlWebpackPlugin({
                 template      : helpers.root('./src/index.html'),
                 //inject        : 'body',
-                chunks        : ['commons.chunk.js', 'vendor', 'app'],
+                chunks        : ['commons.chunk', 'vendor', 'app'],
                 chunksSortMode: 'dependency'
             }),
             new HtmlWebpackPlugin({
-                filename:"app.other.html",
+                filename      : "app.other.html",
                 template      : helpers.root('./src/index.html'),
                 //inject        : 'body',
                 chunks        : ['commons.chunk.js', 'vendor', 'app.other'],
                 chunksSortMode: 'dependency'
             }),
-            extractLESS,
-            //new ExtractTextPlugin('[name].[hash:8].css', { disable: !isProd })
+            // Reference: https://github.com/webpack/extract-text-webpack-plugin
+            // Extract css files
+            new ExtractTextPlugin(isProd ? '[name].[hash:8].css' : '[name].css')
         ],
+
+        /**
+         * PostCSS
+         * Reference: https://github.com/postcss/autoprefixer
+         */
+        postcss: [
+            autoprefixer({
+                browsers: ['last 2 version']
+            })
+        ],
+
         /**
          * Dev server configuration
          * Reference: http://webpack.github.io/docs/configuration.html#devserver
