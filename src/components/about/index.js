@@ -6,6 +6,12 @@ class AboutController {
     constructor() {
         this.name = 'About';
         this.color = 'red';
+
+        // 动态加载
+        // require.ensure(['./module-a'], function(require) {
+        //     var a = require('./module-a');
+        //     a();
+        // });
     }
 }
 

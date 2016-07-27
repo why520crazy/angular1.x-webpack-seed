@@ -6,6 +6,7 @@ const helpers = require('./webpack/helpers');
 const autoprefixer = require('autoprefixer');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const RenamePlugin = require('./webpack-rename-plugin');
 // const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 // set the environment by npm lifecycle event , `npm run build` npm_lifecycle_event is build
@@ -24,6 +25,7 @@ module.exports = function () {
         output : {
             path         : helpers.root('./www'),
             publicPath   : '/',
+            //library      : '[name]_[hash:8]',
             filename     : isProd ? '[name].[hash:8].js' : '[name].bundle.js',
             chunkFilename: isProd ? '[name].[hash:8].js' : '[name].bundle.js'
             // publish to cdn
@@ -89,11 +91,11 @@ module.exports = function () {
                 },
                 /*
                  * Reference https://github.com/webpack/less-loader
-                */
+                 */
                 {
-                    test: /\.less$/,
+                    test   : /\.less$/,
                     exclude: helpers.root("./src/css/main.less"),
-                    loader: ExtractTextPlugin.extract("css!postcss!less")
+                    loader : ExtractTextPlugin.extract("css!postcss!less")
                 },
                 //{test: /\.less$/, loader: extractLESS.extract(['css', 'postcss!less'])},
                 //all css required in src/app files will be merged in js files
@@ -127,7 +129,7 @@ module.exports = function () {
                 // Copy resource files to output
                 {
                     test  : /\.(png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/i,
-                    loader: 'file?name=images/[name].[ext]?[hash:8]'
+                    loader: 'file?name=images/[name].[ext]?[hash]'
                 }
 
             ]
@@ -146,7 +148,11 @@ module.exports = function () {
                 chunks: ['app', 'app.other']
             }),
             new webpack.optimize.CommonsChunkPlugin('vendor', isProd ? 'vendor.[hash:8].js' : 'vendor.bundle.js'),
-
+            // new webpack.DllPlugin({
+            //     path   : 'manifest.json',
+            //     name   : "[name]_[hash:8]",
+            //     context: helpers.root(".")
+            // }),
             // Reference: https://github.com/ampedandwired/html-webpack-plugin
             // Render index.html
             new HtmlWebpackPlugin({
@@ -165,6 +171,7 @@ module.exports = function () {
             // Reference: https://github.com/webpack/extract-text-webpack-plugin
             // Extract css files
             new ExtractTextPlugin(isProd ? '[name].[hash:8].css' : '[name].css')
+            //new RenamePlugin()
         ],
 
         /**
