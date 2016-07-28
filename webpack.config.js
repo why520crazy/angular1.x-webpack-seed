@@ -6,7 +6,6 @@ const helpers = require('./webpack/helpers');
 const autoprefixer = require('autoprefixer');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const RenamePlugin = require('./webpack/webpack-rename-plugin');
 // const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 // set the environment by npm lifecycle event , `npm run build` npm_lifecycle_event is build

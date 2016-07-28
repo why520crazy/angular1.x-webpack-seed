@@ -15,7 +15,8 @@ let appComponent = {
     controllerAs: 'app'
 };
 
-export default angular.module('xxxApp', [ngRoute, components])
+export default angular.module('xxxApp', [ngRoute, components,'hello'])
     .config(appRouter)
     .component('app', appComponent)
     .name;
+angular.module('hello',[]);
