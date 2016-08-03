@@ -18,6 +18,7 @@
 1. 使用 HtmlWebpackPlugin 插件生成入口的HTML文件，并把打包之后的JS和CSS引入到HTML中，不需要手动添加 scripts 标签和 style link；
 1. 使用 ExtractTextPlugin 插件把 CSS 抽取成独立的文件，当然你也可以不这么做，直接放在 JS 中；
 1. 使用 postcss 处理样式的兼容性问题，autoprefixer 自动追加前缀等。
+2. 
 
 ## Build
 
